@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Primary Meta Tags -->
+    <title>LocalNotes - Offline Notes</title>
+    <meta name="title" content="LocalNotes - Offline Notes">
+    <title>LocalNotes</title>
+    <link rel="shortcut icon" href="icon.png" type="image/x-icon">
+
+    <style>
+        #menu-icon {
+            width: 35px;
+            height: 35px;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+            animation-duration: 0.25s;
+            animation-fill-mode: forwards;
+        }
+
+        @keyframes rotate-open {
+            0% {
+                transform: rotate(0);
+            }
+
+            100% {
+                transform: rotate(90deg);
+            }
+        }
+
+        @keyframes rotate-close {
+            0% {
+                transform: rotate(90deg);
+            }
+
+            100% {
+                transform: rotate(0);
+            }
+        }
+
+        #menu {
+            background-color: rgb(185, 136, 248);
+            border: 1px solid rgb(185, 136, 248);
+            color: black;
+            filter: opacity(0.9);
+            border-radius: 15px;
+            position: absolute;
+            top: 45px;
+            right: 45px;
+            text-align: left;
+
+            /* Invisible */
+            display: none;
+        }
+
+        select {
+            background-color: rgb(185, 136, 248);
+            font-size: medium;
+            border: none;
+        }
+
+        table {
+            padding: 8px;
+        }
+
+        td {
+            padding: 5px;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+                Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue",
+                sans-serif;
+            text-align: center;
+            margin: 0;
+            font-size: large;
+
+            transition: linear;
+            transition-duration: 0.5s;
+        }
+
+        .body-light {
+            background-color: rgb(228, 228, 228);
+            color: rgb(23, 23, 23);
+        }
+
+        .body-dark {
+            background-color: rgb(33, 33, 33);
+            color: white;
+        }
+
+        #notes {
+            width: 90%;
+            height: 80vh;
+            resize: none;
+            border-radius: 10px;
+            padding: 25px 15px;
+            border: none;
+            font-size: large;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+                Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue",
+                sans-serif;
+            outline: none;
+            line-height: 30px;
+        }
+
+        .textarea-light {
+            background-color: white;
+            color: rgb(23, 23, 23);
+        }
+
+        .textarea-dark {
+            background-color: rgb(60, 59, 59);
+            color: white;
+        }
+    </style>
+
+</head>
+
+<body id="body" class="body-light">
+    <h1>Local Notes</h1>
+
+    <img src="menu.png" alt="menu" id="menu-icon" onclick="toggle()">
+
+    <div id="menu">
+        <table>
+            <!-- Themes -->
+            <tr>
+                <td>Theme :</td>
+                <td>
+                    <select onchange="themeChange()" name="theme" id="theme-select">
+                        <option value="light">Light</option>
+                        <option value="dark">Dark</option>
+                    </select>
+                </td>
+            </tr>
+
+            <!-- Font size -->
+            <tr>
+                <td>Font size :</td>
+                <td>
+                    <select onchange="fontSizeChange()" name="font" id="font-size-select">
+
+                        <option value="small">Small</option>
+                        <option value="large">Medium</option>
+                        <option value="x-large">Large</option>
+                    </select>
+                </td>
+            </tr>
+
+            <tr>
+                <td>Font style :</td>
+                <td><select onchange="fontFamilyChange()" name="font-style" id="font-style-select">
+                        <option value="system-ui">System</option>
+                        <option value="monospace">Monospace</option>
+                        <option value="serif">Serif</option>
+                        <option value="sans-serif">Sans-Serif</option>
+                    </select></td>
+            </tr>
+        </table>
+    </div>
+
+    <textarea class="textarea-light" onkeyup="syncNotes()" id="notes">Hello world</textarea>
+
+    <script>
+        // Checking local storage
+
+        const theme = localStorage.getItem("theme");
+        const font_size = localStorage.getItem("font-size");
+        const font_family = localStorage.getItem("font-family");
+        ///////////////////////
+
+        const textarea = document.getElementById("notes");
+        const body = document.getElementById("body");
+
+        const theme_select = document.getElementById("theme-select");
+        const font_style_select = document.getElementById("font-style-select");
+        const font_size_select = document.getElementById("font-size-select");
+
+        let notes = localStorage.getItem("notes");
+        textarea.value = notes;
+
+        const menu = document.getElementById("menu");
+
+        let rotated = false;
+
+        function toggle() {
+            if (rotated == false) {
+                document.getElementById("menu-icon").style.animationName =
+                    "rotate-open";
+                rotated = true;
+            } else {
+                document.getElementById("menu-icon").style.animationName =
+                    "rotate-close";
+                rotated = false;
+            }
+
+            if (menu.style.display == "none" || menu.style.display == "") {
+                menu.style.display = "inline-block";
+            } else {
+                menu.style.display = "none";
+            }
+        }
+
+        function syncNotes() {
+            notes = document.getElementById("notes").value;
+            localStorage.setItem("notes", notes);
+        }
+
+        //////////////////////////////////////
+        // Handling themes
+        //////////////////////////////////////
+
+        function themeChange() {
+            if (theme_select.value == "dark") {
+                body.className = "body-dark";
+                textarea.className = "textarea-dark";
+                localStorage.setItem("theme", "dark");
+            } else if (theme_select.value == "light") {
+                body.className = "body-light";
+                textarea.className = "textarea-light";
+                localStorage.setItem("theme", "light");
+            }
+        }
+
+        // Setting theme according to local storage
+        if (theme) {
+            body.className = "body-" + theme;
+            textarea.className = "textarea-" + theme;
+            theme_select.value = theme;
+        }
+
+        //////////////////////////////////////////
+
+        // Handling font families
+
+        function fontFamilyChange() {
+            body.style.fontFamily = font_style_select.value;
+            textarea.style.fontFamily = font_style_select.value;
+            localStorage.setItem("font-family", font_style_select.value);
+        }
+
+        if (font_family) {
+            body.style.fontFamily = font_family;
+            textarea.style.fontFamily = font_family;
+            font_style_select.value = font_family;
+        }
+
+        ////////////////////////////
+
+        // Handling font sizes
+
+        function fontSizeChange() {
+            body.style.fontSize = font_size_select.value;
+            textarea.style.fontSize = font_size_select.value;
+            localStorage.setItem("font-size", font_size_select.value);
+        }
+
+        if (font_size) {
+            body.style.fontSize = font_size;
+            textarea.style.fontSize = font_size;
+            font_size_select.value = font_size;
+        }
+
+///////////////////////////
+    </script>
+</body>
+</html>
