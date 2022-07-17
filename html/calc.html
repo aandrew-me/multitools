@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calculator</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #08aeea;
+      background-image: linear-gradient(0deg, #08aeea 0%, #2af598 100%);
+      background-repeat: no-repeat;
+    }
+
+    .container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .calc {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+      width: 50%;
+      margin-top: 5%;
+    }
+
+    @media screen and (max-width: 750px) {
+      .calc {
+        width: 80%;
+        margin-top: 10%;
+      }
+    }
+
+    @media screen and (max-width: 500px) {
+      .calc {
+        width: 90%;
+        margin-top: 20%;
+      }
+    }
+
+    .screen {
+      display: flex;
+      align-items: flex-end;
+      flex-direction: column;
+      justify-content: flex-end;
+
+      overflow: hidden;
+      border-radius: 5px 5px 0 0;
+      color: rgb(226, 224, 224);
+      padding: 10px;
+      width: 100%;
+      height: 60px;
+      background-color: rgba(0, 0, 0, 0.75);
+      font-size: 30px;
+    }
+
+    .screen:hover {
+      cursor: pointer;
+    }
+
+    button {
+      width: 25%;
+      height: 90px;
+      font-size: 24px;
+      font-weight: 630;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background-color: rgba(250, 249, 249, 0.781);
+      border: 1px solid white;
+    }
+
+    button:active {
+      font-size: 18px;
+    }
+
+    .equal {
+      width: 50%;
+      border-radius: 0 0 5px 0;
+    }
+
+    .dot {
+      border-radius: 0 0 0 5px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+    <div id="calc" class="calc">
+      <div id="screen" class="screen" onclick="copy()"></div>
+
+      <button class="ac" onclick="clearScreen()">AC</button>
+      <button onclick="del()">DEL</button>
+      <button onclick="operation('%')">%</button>
+      <button onclick="operation('/')">÷</button>
+
+      <button onclick="addToScreen(1)">1</button><button onclick="addToScreen(2)">2</button><button
+        onclick="addToScreen(3)">3</button><button onclick="operation('*')">*</button>
+
+      <button onclick="addToScreen(4)">4</button><button onclick="addToScreen(5)">5</button><button
+        onclick="addToScreen(6)">6</button><button onclick="operation('+')">+</button>
+
+      <button onclick="addToScreen(7)">7</button><button onclick="addToScreen(8)">8</button><button
+        onclick="addToScreen(9)">9</button><button onclick="operation('-')">-</button>
+
+      <button class="dot" onclick="addToScreen('.')">.</button><button onclick="addToScreen(0)">0</button><button
+        class="equal" onclick="process()">=</button>
+    </div>
+  </div>
+
+  <script>
+    let myScreen = document.getElementById("screen");
+    let input = "";
+    let latestValue;
+
+    document.addEventListener("keydown", function (event) {
+      if (
+        event.key == "1" ||
+        event.key == "2" ||
+        event.key == "3" ||
+        event.key == "4" ||
+        event.key == "5" ||
+        event.key == "6" ||
+        event.key == "7" ||
+        event.key == "8" ||
+        event.key == "9" ||
+        event.key == "." ||
+        event.key == "0" ||
+        event.key == "(" ||
+        event.key == ")" ||
+        event.key == "%"
+      ) {
+        addToScreen(event.key);
+      } else if (event.key == "Enter" || event.key == "=") {
+        process();
+      } else if (
+        event.key == "/" ||
+        event.key == "+" ||
+        event.key == "-" ||
+        event.key == "*"
+      ) {
+        operation(event.key);
+      } else if (event.key == "Backspace") {
+        del();
+      }
+      else if (event.key == "Delete") {
+        clearScreen()
+      }
+    });
+
+    function addToScreen(value) {
+      myScreen.textContent += value;
+      input += value;
+      latestValue = value;
+    }
+
+    function copy() {
+      navigator.clipboard.writeText(input);
+    }
+
+    function operation(value) {
+      if (
+        latestValue != "*" &&
+        latestValue != "+" &&
+        latestValue != "-" &&
+        latestValue != "÷" &&
+        latestValue != "/" &&
+        latestValue != "%"
+      ) {
+        myScreen.textContent += value;
+        input += value;
+        latestValue = value;
+      }
+    }
+
+    function clearScreen() {
+      myScreen.textContent = "";
+      input = "";
+    }
+
+    function del() {
+      let splitted = myScreen.textContent.split("");
+      splitted.pop();
+      splitted = splitted.join("");
+
+      myScreen.textContent = splitted;
+      input = splitted;
+    }
+    function process() {
+      let result = eval(input)
+      myScreen.textContent = result
+      input = result
+      console.log(input)
+    }
+
+  </script>
+</body>
+
+</html>

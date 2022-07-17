@@ -27,6 +27,8 @@ app.use(express.static(__dirname + "/uploads"));
 app.set("view engine", "ejs");
 app.set("views", __dirname + "/views");
 app.use(bodyparser.urlencoded({ extended: false }));
+const html = __dirname + "/html/"
+
 
 //////////////////////////////////////////
 
@@ -49,7 +51,7 @@ else{
 
 
 app.get("/", (req, res) => {
-	res.render("index.ejs");
+	res.sendFile(html + "index.html")
 });
 
 // Video file handling
@@ -272,7 +274,11 @@ app.post("/document", upload.single("file"), function (req, res) {
 });
 
 app.get("/notes", (req, res)=>{
-	res.sendFile(__dirname + "/public/" + "notes.html")
+	res.sendFile(html + "notes.html")
+})
+
+app.get("/calculator", (req, res)=>{
+	res.sendFile(html + "calc.html")
 })
 
 
