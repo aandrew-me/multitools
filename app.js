@@ -10,8 +10,8 @@ const fs = require("fs");
 const fsp = require("fs").promises;
 const path = require("path");
 // Libreoffice needs to be installed
-const libre = require('libreoffice-convert');
-libre.convertAsync = require('util').promisify(libre.convert);
+const libre = require("libreoffice-convert");
+libre.convertAsync = require("util").promisify(libre.convert);
 const storage = multer.diskStorage({
 	destination: function (req, file, cb) {
 		cb(null, __dirname + "/uploads");
@@ -27,45 +27,38 @@ app.use(express.static(__dirname + "/uploads"));
 app.set("view engine", "ejs");
 app.set("views", __dirname + "/views");
 app.use(bodyparser.urlencoded({ extended: false }));
-const html = __dirname + "/html/"
-
+const html = __dirname + "/html/";
 
 //////////////////////////////////////////
 
 // Removing any uploaded or converted files if there are any
-const uploads = __dirname + "/uploads"
-const converted = __dirname + "/converted"
+const uploads = __dirname + "/uploads";
+const converted = __dirname + "/converted";
 
-if (!fs.existsSync(uploads)){
-    fs.mkdirSync(uploads);
+if (!fs.existsSync(uploads)) {
+	fs.mkdirSync(uploads);
+} else {
+	fs.readdirSync(uploads).forEach((f) => fs.rmSync(`${uploads}/${f}`));
 }
-else{
-	fs.readdirSync(uploads).forEach(f => fs.rmSync(`${uploads}/${f}`))
+if (!fs.existsSync(converted)) {
+	fs.mkdirSync(converted);
+} else {
+	fs.readdirSync(converted).forEach((f) => fs.rmSync(`${converted}/${f}`));
 }
-if (!fs.existsSync(converted)){
-	fs.mkdirSync(converted)
-}
-else{
-	fs.readdirSync(converted).forEach(f => fs.rmSync(`${converted}/${f}`))
-}
-
 
 app.get("/", (req, res) => {
-	res.sendFile(html + "index.html")
+	res.sendFile(html + "index.html");
 });
 
 // Video file handling
 
 app.get("/video", (req, res) => {
-	res.render("video");
+	res.render("video", { warning: "" });
 });
 
 app.post("/video", upload.single("file"), (req, res) => {
 	const filepath = req.file.path;
-	const output =
-		Date.now() +
-		"_converted." +
-		req.body.format;
+	const output = Date.now() + "_converted." + req.body.format;
 
 	try {
 		var process = new ffmpeg(filepath);
@@ -94,30 +87,40 @@ app.post("/video", upload.single("file"), (req, res) => {
 				}
 
 				video
-					// .setVideoFrameRate(
-					// 	req.body.framerate || video.metadata.video.fps
-					// )
-					// .setVideoSize(videoSize, true, preserveRatio)
-					.save(__dirname + "/converted/" + output, function (error, file) {
-						if (!error) {
-						console.log("File: " + file);
-						res.download(__dirname + "/converted/" + output, () => {
-							fs.unlink(__dirname + "/converted/" + output, (err) => {
-								if (err) throw err;
-								console.log("Deleted: " + file);
-							});
-							fs.unlink(filepath, (err) => {
-								if (err) throw err;
-								console.log("Deleted: " + filepath);
-							});
-						});
+					.save(
+						__dirname + "/converted/" + output,
+						function (error, file) {
+							if (!error) {
+								console.log("File: " + file);
+								res.download(
+									__dirname + "/converted/" + output,
+									() => {
+										fs.unlink(
+											__dirname + "/converted/" + output,
+											(err) => {
+												if (err) throw err;
+												console.log("Deleted: " + file);
+											}
+										);
+										fs.unlink(filepath, (err) => {
+											if (err) throw err;
+											console.log("Deleted: " + filepath);
+										});
+									}
+								);
+							} else {
+								fs.readdirSync(uploads).forEach((f) => fs.rmSync(`${uploads}/${f}`));
+								res.render("video", {warning:"<script>alert(`Some error has occured. Please try again.`)</script>"})
+							}
 						}
-						else{
-							res.send(error)
-						}
-					});
+					);
 			},
 			function (err) {
+				fs.readdirSync(uploads).forEach((f) => fs.rmSync(`${uploads}/${f}`));
+				res.render("video", {
+					warning:
+						"<script>alert(`Some error has occured. Use correct file and try again.`)</script>",
+				});
 				console.log("Error: " + err);
 			}
 		);
@@ -130,95 +133,51 @@ app.post("/video", upload.single("file"), (req, res) => {
 // Audio file handling
 
 app.get("/audio", (req, res) => {
-	res.render("audio");
+	res.render("audio", { warning: "" });
 });
 
 app.post("/audio", upload.single("file"), (req, res) => {
 	const filepath = req.file.path;
-	const outputpath = __dirname + "/converted/" + Date.now() + "_converted." + req.body.format;
-	const volume = Number(req.body.volume) || 1
+	const outputpath =
+		__dirname +
+		"/converted/" +
+		Date.now() +
+		"_converted." +
+		req.body.format;
+	const volume = Number(req.body.volume) || 1;
 	let normalize;
-	if (req.body.normalize == "on"){
-		normalize = "-filter:a loudnorm "
-	}
-	else{
-		normalize = ""
+	if (req.body.normalize == "on") {
+		normalize = "-filter:a loudnorm ";
+	} else {
+		normalize = "";
 	}
 
 	const command =
 		ffmpegStatic +
 		` -i ` +
 		filepath +
-		` -filter:a "volume=` + volume + `" ` +
+		` -filter:a "volume=` +
+		volume +
+		`" ` +
 		normalize +
-        outputpath;
+		outputpath;
 
-	console.log(command)
+	console.log(command);
 	exec(command, (err, output) => {
 		// once the command has completed, the callback function is called
 		if (err) {
-			// log and return if we encounter an error
-			console.error("could not execute command: ", err);
+			fs.readdirSync(uploads).forEach((f) => fs.rmSync(`${uploads}/${f}`));
+			console.error("Could not execute command: ", err);
+			res.render("audio", {
+				warning:
+					"<script>alert(`Some error has occured. Use correct file and try again.`)</script>",
+			});
 			return;
 		}
-        res.download(outputpath, ()=>{
+		res.download(outputpath, () => {
 			fs.unlink(outputpath, (err) => {
 				if (err) throw err;
 				console.log("Deleted: " + outputpath);
-			});
-			fs.unlink(filepath, (err) => {
-				if (err) throw err;
-				console.log("Deleted: " + filepath);
-			});
-		})
-	});
-});
-
-// Image processing
-
-app.get("/image",upload.single('file'), (req, res) => {
-	res.render("image");
-});
-
-app.post("/image", upload.single("file"), (req, res) => {
-	const filepath = req.file.path;
-	const outputfile = Date.now() + "_converted." + req.body.format;
-	let width, height;
-
-	jimp.read(filepath, async (err, image) => {
-		if (req.body.width && !req.body.height){
-			width = Number(req.body.width)
-			height = jimp.AUTO
-		}
-		else if (!req.body.width && req.body.height){
-			height = jimp.AUTO;
-			width = Number(req.body.height)
-		}
-		else if (req.body.width && req.body.height){
-			width = Number(req.body.width)
-			height = Number(req.body.height)
-		}
-		else if (image.getWidth() && image.getHeight() ){
-			width =  image.getWidth() 
-			height = image.getHeight()
-		}
-		else{
-			res.render("image")
-		}
-
-		if (err) {
-			res.render("image")
-		}
-
-		await image
-			.quality(Number(req.body.quality) || 85) // set JPEG quality
-			.resize(width, height)
-			.writeAsync(__dirname + "/converted/" + outputfile); // save
-		res.download(__dirname + "/converted/" + outputfile, () => {
-			// Removing the files
-			fs.unlink(__dirname + "/converted/" + outputfile, (err) => {
-				if (err) throw err;
-				console.log("Deleted: " + outputfile);
 			});
 			fs.unlink(filepath, (err) => {
 				if (err) throw err;
@@ -228,10 +187,68 @@ app.post("/image", upload.single("file"), (req, res) => {
 	});
 });
 
+// Image processing
 
+app.get("/image", upload.single("file"), (req, res) => {
+	res.render("image", { warning: "" });
+});
+
+app.post("/image", upload.single("file"), (req, res) => {
+	const filepath = req.file.path;
+	const outputfile = Date.now() + "_converted." + req.body.format;
+	let width, height;
+
+	jimp.read(filepath, async (err, image) => {
+		if (req.body.width && !req.body.height) {
+			width = Number(req.body.width);
+			height = jimp.AUTO;
+		} else if (!req.body.width && req.body.height) {
+			height = jimp.AUTO;
+			width = Number(req.body.height);
+		} else if (req.body.width && req.body.height) {
+			width = Number(req.body.width);
+			height = Number(req.body.height);
+		} else {
+			try {
+				width = image.getWidth();
+				height = image.getHeight();
+			} catch (error) {
+				console.log(error);
+			}
+		}
+
+		if (err) {
+			fs.readdirSync(uploads).forEach((f) => fs.rmSync(`${uploads}/${f}`));
+			res.render("image", {
+				warning:
+					"<script>alert(`Some error has occured. Use correct file and try again.`)</script>",
+			});
+		} else {
+			await image
+				.quality(Number(req.body.quality) || 85) // set JPEG quality
+				.resize(width, height)
+				.writeAsync(__dirname + "/converted/" + outputfile)
+				.catch((error) => {
+					console.log("Problems");
+				});
+
+			res.download(__dirname + "/converted/" + outputfile, () => {
+				// Removing the files
+				fs.unlink(__dirname + "/converted/" + outputfile, (err) => {
+					if (err) throw err;
+					console.log("Deleted: " + outputfile);
+				});
+				fs.unlink(filepath, (err) => {
+					if (err) throw err;
+					console.log("Deleted: " + filepath);
+				});
+			});
+		}
+	});
+});
 
 app.get("/document", (req, res) => {
-	res.render("document", {warning:""});
+	res.render("document", { warning: "" });
 });
 
 // Requires libreoffice to be installed
@@ -243,17 +260,21 @@ app.post("/document", upload.single("file"), function (req, res) {
 
 	async function main() {
 		const inputPath = filepath;
-		const outputPath = __dirname + "/converted/" + outputfile
-	
+		const outputPath = __dirname + "/converted/" + outputfile;
+
 		// Read file
 		const docxBuf = await fsp.readFile(inputPath);
-	
+
 		// Convert it to pdf format with undefined filter (see Libreoffice docs about filter)
-		let pdfBuf = await libre.convertAsync(docxBuf, req.body.format, undefined);
-		
+		let pdfBuf = await libre.convertAsync(
+			docxBuf,
+			req.body.format,
+			undefined
+		);
+
 		// Here in done you have pdf file which you can save or transfer in another stream
 		await fsp.writeFile(outputPath, pdfBuf);
-		res.download(outputPath, ()=>{
+		res.download(outputPath, () => {
 			fs.unlink(outputPath, (err) => {
 				if (err) throw err;
 				console.log("Deleted: " + outputfile);
@@ -262,27 +283,28 @@ app.post("/document", upload.single("file"), function (req, res) {
 				if (err) throw err;
 				console.log("Deleted: " + filepath);
 			});
-		})
+		});
 	}
-	
+
 	main().catch(function (err) {
 		console.log(`Error converting file: ${err}`);
-		fs.readdirSync(uploads).forEach(f => fs.rmSync(`${uploads}/${f}`))
-		res.render("document", {warning:"<script>alert(`Some error has occured. Use correct file.`)</script>"})
+		fs.readdirSync(uploads).forEach((f) => fs.rmSync(`${uploads}/${f}`));
+		res.render("document", {
+			warning:
+				"<script>alert(`Some error has occured. Use correct file.`)</script>",
+		});
 	});
-
 });
 
-app.get("/notes", (req, res)=>{
-	res.sendFile(html + "notes.html")
-})
+app.get("/notes", (req, res) => {
+	res.sendFile(html + "notes.html");
+});
 
-app.get("/calculator", (req, res)=>{
-	res.sendFile(html + "calc.html")
-})
+app.get("/calculator", (req, res) => {
+	res.sendFile(html + "calc.html");
+});
 
-
-const PORT = process.env.PORT || 60699
+const PORT = process.env.PORT || 60699;
 app.listen(PORT, () => {
 	console.log("Server: http://127.0.0.1:" + PORT);
 });

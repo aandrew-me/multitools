@@ -30,7 +30,7 @@
 	"description": "A set of conversion tools",
 	"author": "Andrew",
 	"name": "multitools",
-	"version": "0.0.2",
+	"version": "0.0.3",
 	"license": "MIT",
 	"build": {
 		"productName": "MultiTools",
