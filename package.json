@@ -23,10 +23,7 @@
 		"windows": "rm -rf node_modules && electron-builder -w --publish always",
 		"mac": "rm -rf node_modules && electron-builder -m"
 	},
-	"devDependencies": {
-		"electron": "19.0.8",
-		"electron-builder": "^23.1.0"
-	},
+
 	"description": "A set of conversion tools",
 	"author": "Andrew",
 	"name": "multitools",

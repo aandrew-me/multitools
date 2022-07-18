@@ -176,7 +176,7 @@ app.post("/audio", upload.single("file"), (req, res) => {
 
 // Image processing
 
-app.get("/image", (req, res) => {
+app.get("/image",upload.single('file'), (req, res) => {
 	res.render("image");
 });
 

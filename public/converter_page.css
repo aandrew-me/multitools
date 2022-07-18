@@ -5,6 +5,8 @@ body{
     padding:10px;
     margin:0;
   }
+
+
   .container{
     background-color: whitesmoke;
     border-radius: 10px;
@@ -120,4 +122,14 @@ input::-webkit-inner-spin-button {
 /* Firefox */
 input[type=number] {
   -moz-appearance: textfield;
+}
+
+@media screen and (max-width:600px) {
+  .box{
+    text-align: center;
+    padding:10px;
+  }
+  h1{
+    font-size:50px;
+  }
 }

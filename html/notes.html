@@ -18,10 +18,22 @@
             height: 35px;
             position: absolute;
             top: 10px;
-            right: 10px;
+            left: 10px;
             cursor: pointer;
             animation-duration: 0.25s;
             animation-fill-mode: forwards;
+        }
+
+        #back {
+            text-decoration: none;
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background-color: rgb(239, 117, 117);
+            padding: 8px;
+            border-radius: 10px;
+            color: white;
+            font-size: 20px;
         }
 
         @keyframes rotate-open {
@@ -52,7 +64,7 @@
             border-radius: 15px;
             position: absolute;
             top: 45px;
-            right: 45px;
+            left: 45px;
             text-align: left;
 
             /* Invisible */
@@ -126,6 +138,7 @@
 <body id="body" class="body-light">
     <h1>Local Notes</h1>
 
+    <a href="/" id="back">Back</a>
     <img src="menu.png" alt="menu" id="menu-icon" onclick="toggle()">
 
     <div id="menu">
@@ -148,7 +161,7 @@
                     <select onchange="fontSizeChange()" name="font" id="font-size-select">
 
                         <option value="small">Small</option>
-                        <option value="large">Medium</option>
+                        <option value="large" selected>Medium</option>
                         <option value="x-large">Large</option>
                     </select>
                 </td>
@@ -271,4 +284,5 @@
 ///////////////////////////
     </script>
 </body>
+
 </html>
